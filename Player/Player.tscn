@@ -115,4 +115,8 @@ position = Vector2( 4, 1 )
 [node name="Left" type="Position2D" parent="Shooter"]
 position = Vector2( -4, 1 )
 
-[node name="AttackingTimer" parent="." instance=ExtResource( 5 )]
+[node name="AttackAnimationTimer" parent="." instance=ExtResource( 5 )]
+
+[node name="AttackTimer" parent="." instance=ExtResource( 5 )]
+is_waiting = true
+duration = 5

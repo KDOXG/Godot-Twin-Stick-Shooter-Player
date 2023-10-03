@@ -15,10 +15,12 @@ onready var movement: Vector2 = Vector2.ZERO
 onready var attack_direction: Vector2 = Vector2.ZERO
 
 onready var is_attacking: bool = false
+onready var attacked: bool = false
 onready var facing_left: bool = false
 
 func _ready():
-	$AttackingTimer.call("connect", "timeout", self, "timeout_attacking")
+	$AttackAnimationTimer.call("connect", "timeout", self, "on_timeout_attack_animation_timer")
+	$AttackTimer.call("connect", "timeout", self, "on_timeout_attack_timer")
 
 func _physics_process(delta):
 	movement = InputManager.get_move_vector()
@@ -29,9 +31,12 @@ func _physics_process(delta):
 	final_movement = move_and_slide(final_movement, Vector2.UP)
 	
 	if InputManager._is_action_pressed("attack") or InputManager.is_action_group_single_pressed("attack"):
-		$Shooter.shoot(attack_direction, delta)
+		if not is_attacking:
+			$Shooter.shoot(attack_direction, delta)
+		attacked = true
+		$AttackAnimationTimer.set_timer(Constants.ATTACKING_FRAMES)
 		is_attacking = true
-		$AttackingTimer.set_timer(Constants.ATTACKING_FRAMES)
+		$AttackTimer.set_timer(Constants.PLAYER_ATTACK_RATE_FRAMES)
 	
 	set_state()
 	$AnimatedSprite.play_animation(facing_left, player_state)
@@ -40,7 +45,7 @@ func set_state():
 	var idle: bool = movement == Vector2.ZERO
 	player_state = ANIMATION_STATES.IDLE if idle else ANIMATION_STATES.WALKING
 	
-	if is_attacking:
+	if attacked:
 		player_state = set_attacking_animation()
 		
 	if movement.x < 0:
@@ -60,5 +65,8 @@ func set_attacking_animation():
 			return ANIMATION_STATES.ATTACKING_WALKING
 	return player_state
 
-func timeout_attacking():
+func on_timeout_attack_animation_timer():
+	attacked = false
+
+func on_timeout_attack_timer():
 	is_attacking = false
