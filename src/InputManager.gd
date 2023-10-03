@@ -11,9 +11,9 @@ onready var disabled_move: bool = false
 onready var disabled_action: bool = false
 
 onready var previous_move: Vector2 = Vector2.ZERO
-onready var previous_move_valid: Vector2 = Vector2.ZERO
+onready var previous_move_valid: Vector2 = Constants.DEFAULT_DIRECTION
 onready var previous_attack: Vector2 = Vector2.ZERO
-onready var previous_attack_valid: Vector2 = Vector2.ZERO
+onready var previous_attack_valid: Vector2 = Constants.DEFAULT_DIRECTION
 
 var mouse_active: bool = false
 
@@ -27,26 +27,12 @@ func get_move_vector() -> Vector2:
 	var move: Vector2 = Vector2.ZERO
 	if disabled_move:
 		return move
-	if Input.is_action_pressed("move_down") and Input.is_action_pressed("move_up"):
-		move.y = -previous_move.y if previous_move_valid.y else previous_move.y
-		previous_move_valid.y = 0
-	else:
-		previous_move_valid.y = 1
-		if Input.is_action_pressed("move_down"):
-			move.y += Constants.DIRECTION.DOWN
-		if Input.is_action_pressed("move_up"):
-			move.y += Constants.DIRECTION.UP
-	if Input.is_action_pressed("move_left") and Input.is_action_pressed("move_right"):
-		move.x = -previous_move.x if previous_move_valid.x else previous_move.x
-		previous_move_valid.x = 0
-	else:
-		previous_move_valid.x = 1
-		if Input.is_action_pressed("move_right"):
-			move.x += Constants.DIRECTION.RIGHT
-		if Input.is_action_pressed("move_left"):
-			move.x += Constants.DIRECTION.LEFT
+	move = _get_direction_vector(previous_move, previous_move_valid, ["move_down", "move_up", "move_left", "move_right"])
 	previous_move = move
+	previous_move_valid.y = 0 if Input.is_action_pressed("move_down") and Input.is_action_pressed("move_up") else 1
+	previous_move_valid.x = 0 if Input.is_action_pressed("move_left") and Input.is_action_pressed("move_right") else 1
 	return move
+	
 
 func get_attack_vector() -> Vector2:
 	var attack: Vector2 = Vector2.ZERO
@@ -56,26 +42,36 @@ func get_attack_vector() -> Vector2:
 		var player_position = GroupManager.get_single_node("player").global_position
 		var mouse_position = get_viewport().get_mouse_position()
 		return player_position.direction_to(mouse_position)
-	if Input.is_action_pressed("attack_down") and Input.is_action_pressed("attack_up"):
-		attack.y = -previous_attack.y if previous_attack_valid.y else previous_attack.y
-		previous_attack_valid.y = 0
-	else:
-		previous_attack_valid.y = 1
-		if Input.is_action_pressed("attack_down"):
-			attack.y += Constants.DIRECTION.DOWN
-		if Input.is_action_pressed("attack_up"):
-			attack.y += Constants.DIRECTION.UP
-	if Input.is_action_pressed("attack_left") and Input.is_action_pressed("attack_right"):
-		attack.x = -previous_attack.x if previous_attack_valid.x else previous_attack.x
-		previous_attack_valid.x = 0
-	else:
-		previous_attack_valid.x = 1
-		if Input.is_action_pressed("attack_right"):
-			attack.x += Constants.DIRECTION.RIGHT
-		if Input.is_action_pressed("attack_left"):
-			attack.x += Constants.DIRECTION.LEFT
+	
+	attack = _get_direction_vector(previous_attack, previous_attack_valid, ["attack_down", "attack_up", "attack_left", "attack_right"])
 	previous_attack = attack
+	previous_attack_valid.y = 0 if Input.is_action_pressed("attack_down") and Input.is_action_pressed("attack_up") else 1
+	previous_attack_valid.x = 0 if Input.is_action_pressed("attack_left") and Input.is_action_pressed("attack_right") else 1
 	return attack
+	
+
+func _get_direction_vector(previous: Vector2, previous_valid: Vector2, directions: Array):
+	var direction: Vector2 = Vector2.ZERO
+	if Input.is_action_pressed(directions[0]) and Input.is_action_pressed(directions[1]):
+		direction.y = Constants.DEFAULT_DIRECTION.y if previous.y == 0 \
+		else -previous.y if previous_valid.y \
+		else previous.y
+	else:
+		if Input.is_action_pressed(directions[0]):
+			direction.y += Constants.DIRECTION.DOWN
+		if Input.is_action_pressed(directions[1]):
+			direction.y += Constants.DIRECTION.UP
+	if Input.is_action_pressed(directions[2]) and Input.is_action_pressed(directions[3]):
+		direction.x = Constants.DEFAULT_DIRECTION.x if previous.x == 0 \
+		else -previous.x if previous_valid.x \
+		else previous.x
+	else:
+		if Input.is_action_pressed(directions[2]):
+			direction.x += Constants.DIRECTION.LEFT
+		if Input.is_action_pressed(directions[3]):
+			direction.x += Constants.DIRECTION.RIGHT
+	previous = direction
+	return direction
 
 func _is_action_pressed(action: String) -> bool:
 	if disabled_action:

@@ -12,6 +12,7 @@ enum ANIMATION_STATES {
 onready var player_state: int = ANIMATION_STATES.IDLE
 
 onready var movement: Vector2 = Vector2.ZERO
+onready var attack_direction: Vector2 = Vector2.ZERO
 
 onready var is_attacking: bool = false
 onready var facing_left: bool = false
@@ -20,14 +21,15 @@ func _ready():
 	$AttackingTimer.call("connect", "timeout", self, "timeout_attacking")
 
 func _physics_process(delta):
-	
 	movement = InputManager.get_move_vector()
+	attack_direction = InputManager.get_attack_vector()
+
 	movement *= Constants.WALK_SPEED
 	var final_movement = Constants.normalize_pixel_per_frame(movement, delta)
-	movement = move_and_slide(final_movement, Vector2.UP)
+	final_movement = move_and_slide(final_movement, Vector2.UP)
 	
 	if InputManager._is_action_pressed("attack") or InputManager.is_action_group_single_pressed("attack"):
-		$Shooter.shoot(delta)
+		$Shooter.shoot(attack_direction, delta)
 		is_attacking = true
 		$AttackingTimer.set_timer(Constants.ATTACKING_FRAMES)
 	
@@ -44,6 +46,10 @@ func set_state():
 	if movement.x < 0:
 		facing_left = true
 	elif movement.x > 0:
+		facing_left = false
+	if attack_direction.x < 0:
+		facing_left = true
+	elif attack_direction.x > 0:
 		facing_left = false
 
 func set_attacking_animation():

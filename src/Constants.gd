@@ -18,5 +18,7 @@ const WALK_SPEED = 1
 
 const ATTACKING_FRAMES = 20
 
+const DEFAULT_DIRECTION = Vector2(DIRECTION.RIGHT, DIRECTION.DOWN)
+
 static func normalize_pixel_per_frame(velocity: Vector2, delta: float):
 	return velocity / delta
