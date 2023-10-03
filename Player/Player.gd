@@ -26,13 +26,13 @@ func _physics_process(delta):
 	var final_movement = Constants.normalize_pixel_per_frame(movement, delta)
 	movement = move_and_slide(final_movement, Vector2.UP)
 	
-	if InputManager._is_action_pressed("attack"):
+	if InputManager._is_action_pressed("attack") or InputManager.is_action_group_single_pressed("attack"):
 		$Shooter.shoot(delta)
 		is_attacking = true
 		$AttackingTimer.set_timer(Constants.ATTACKING_FRAMES)
 	
 	set_state()
-	set_animation()
+	$AnimatedSprite.play_animation(facing_left, player_state)
 
 func set_state():
 	var idle: bool = movement == Vector2.ZERO
@@ -45,10 +45,6 @@ func set_state():
 		facing_left = true
 	elif movement.x > 0:
 		facing_left = false
-
-func set_animation():
-	$AnimatedSprite.set_flip_h(facing_left)
-	$AnimatedSprite.play_by_index(player_state)
 
 func set_attacking_animation():
 	match player_state:

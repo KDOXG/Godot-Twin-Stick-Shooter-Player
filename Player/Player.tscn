@@ -73,7 +73,8 @@ animations = [ {
 resource_name = "AnimatedSprite"
 script/source = "extends AnimatedSprite
 
-func play_by_index(index: int):
+func play_animation(flip_h: bool, index: int):
+	set_flip_h(flip_h)
 	play(get_sprite_frames().get_animation_names()[index])
 "
 
@@ -83,7 +84,7 @@ extents = Vector2( 2.5, 3.5 )
 [sub_resource type="RectangleShape2D" id=24]
 extents = Vector2( 0.5, 0.5 )
 
-[node name="Player" type="KinematicBody2D"]
+[node name="Player" type="KinematicBody2D" groups=["player"]]
 collision_layer = 0
 script = ExtResource( 2 )
 
